@@ -15,7 +15,7 @@ Automatically captures Feign client HTTP traffic as Allure attachments for compr
 ## 📦 Installation
 ```xml
 <dependency>
-    <groupId>bu.allure.openfeign.decoder</groupId>
+    <groupId>io.github.sbushmelev</groupId>
     <artifactId>allure-open-feign</artifactId>
     <version>1.0</version>
     <scope>test</scope>
