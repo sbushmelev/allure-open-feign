@@ -27,7 +27,7 @@
     <url>https://github.com/sbushmelev/allure-open-feign</url>
     <groupId>io.github.sbushmelev</groupId>
     <artifactId>allure-open-feign</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
