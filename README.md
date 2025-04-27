@@ -22,13 +22,12 @@ Automatically captures Feign client HTTP traffic as Allure attachments for compr
 </dependency>
 ```
 
-## 🚀 Usage (Example with GsonDecoder/GsonEncoder)
+## 🚀 Usage (Example with GsonDecoder)
 ```java
        // Configure your Feign client
        MyClient myClient = Feign.builder()
                 .decoder(new AllureResponseDecoder(new GsonDecoder()))
-                .encoder(new GsonEncoder())            
-                .target(MyClient.class, "https://test.url");
+                .target(MyApi.class, "https://test.url");
 ```
 
 ## 📜 License
