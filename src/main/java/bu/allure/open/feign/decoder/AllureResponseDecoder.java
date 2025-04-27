@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 Sergei Bushmelev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bu.allure.open.feign.decoder;
 
 import feign.FeignException;
@@ -18,12 +33,33 @@ import java.util.stream.Collectors;
 
 import static feign.Util.ensureClosed;
 
+/**
+ * A Feign {@link Decoder} implementation that captures HTTP request and response details
+ * and attaches them to Allure reports as attachments.
+ * <p>
+ * This decoder wraps an existing Feign decoder and adds Allure reporting capabilities.
+ * It intercepts all Feign client responses, extracts request/response details,
+ * generates Allure attachments, and then delegates the actual decoding to the underlying decoder.
+ * </p>
+ *
+ * <p><b>Usage example:</b></p>
+ * <pre>{@code
+ * Feign.builder()
+ *      .decoder(new AllureResponseDecoder(new GsonDecoder()))
+ *      .target(MyApi.class, "http://example.com");
+ * }</pre>
+ */
 public class AllureResponseDecoder implements Decoder {
 
     private final Decoder decoder;
 
     private final DefaultAttachmentProcessor processor;
 
+    /**
+     * Creates a new AllureResponseDecoder wrapping the specified decoder.
+     *
+     * @param decoder the underlying decoder to delegate actual decoding to
+     */
     public AllureResponseDecoder(Decoder decoder) {
         this.decoder = decoder;
         this.processor = new DefaultAttachmentProcessor();
@@ -67,6 +103,13 @@ public class AllureResponseDecoder implements Decoder {
         return decoder.decode(response, type);
     }
 
+    /**
+     * Converts HTTP headers from Map<String, Collection<String>> format to Map<String, String> format
+     * by joining multiple header values with commas.
+     *
+     * @param headers the headers map to convert
+     * @return a new map with header values joined by commas
+     */
     private Map<String, String> headers(Map<String, Collection<String>> headers) {
         return headers.entrySet().stream().collect(
                 Collectors.toMap(

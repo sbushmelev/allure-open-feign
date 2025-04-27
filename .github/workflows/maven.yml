@@ -1,23 +1,47 @@
-name: Java CI with Maven
+name: CI & Publish to Maven Central
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+  release:
+    types: [ created ]
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: testing
-      run: mvn clean test
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and Test
+        run: mvn clean verify
+
+  publish:
+    needs: build-and-test
+    if: github.event_name == 'release' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: Publish to Maven Central
+        run: mvn clean deploy -DskipTests -P release
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USR }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PSW }}
