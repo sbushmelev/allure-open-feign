@@ -17,7 +17,7 @@ Automatically captures Feign client HTTP traffic as Allure attachments for compr
 <dependency>
     <groupId>io.github.sbushmelev</groupId>
     <artifactId>allure-open-feign</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
 ```

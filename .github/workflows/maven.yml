@@ -7,12 +7,16 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
+      - 'NOTICE'
+      - 'docs/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
+      - 'NOTICE'
+      - 'docs/**'
   release:
     types: [ created ]
 
