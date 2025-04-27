@@ -1,0 +1,11 @@
+Allure OpenFeign Decoder
+Copyright 2025 Sergei Bushmelev (https://github.com/kkopka)
+
+This product includes software developed by:
+- The OpenFeign Project (https://github.com/OpenFeign/feign)
+- The Allure Framework Team (https://github.com/allure-framework)
+- WireMock (https://github.com/wiremock/wiremock)
+- JUnit Team (https://junit.org/junit5/)
+- Mockito (https://site.mockito.org/)
+- ClassGraph (https://github.com/classgraph/classgraph)
+- Jackson (https://github.com/FasterXML/jackson)
