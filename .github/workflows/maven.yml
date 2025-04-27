@@ -49,6 +49,18 @@ jobs:
           server-password: MAVEN_PASSWORD
           server-id: central
 
+      - name: Install GPG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg
+
+      - name: Import GPG Key
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
       - name: Publish to Maven Central
         run: mvn clean deploy -DserverId=central -DcentralServerId=central -Dgpg.executable=gpg -Dgpg.passphrase=$GPG_PASSPHRASE -DskipTests -P release -B
         env:
