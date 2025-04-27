@@ -42,7 +42,7 @@ jobs:
           server-id: central
 
       - name: Publish to Maven Central
-        run: mvn clean deploy -B -DskipTests -P release
+        run: mvn clean deploy -DserverId=central -DcentralServerId=central -B -DskipTests -P release
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USR }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PSW }}
