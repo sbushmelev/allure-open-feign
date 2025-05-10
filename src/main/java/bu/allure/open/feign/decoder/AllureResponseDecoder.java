@@ -25,13 +25,14 @@ import io.qameta.allure.attachment.http.HttpRequestAttachment;
 import io.qameta.allure.attachment.http.HttpResponseAttachment;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static feign.Util.ensureClosed;
 
 /**
  * A Feign {@link Decoder} implementation that captures HTTP request and response details
@@ -53,8 +54,6 @@ public class AllureResponseDecoder implements Decoder {
 
     private final Decoder decoder;
 
-    private final DefaultAttachmentProcessor processor;
-
     /**
      * Creates a new AllureResponseDecoder wrapping the specified decoder.
      *
@@ -62,7 +61,6 @@ public class AllureResponseDecoder implements Decoder {
      */
     public AllureResponseDecoder(Decoder decoder) {
         this.decoder = decoder;
-        this.processor = new DefaultAttachmentProcessor();
     }
 
     @Override
@@ -74,33 +72,38 @@ public class AllureResponseDecoder implements Decoder {
                 .setHeaders(headers(request.headers()));
 
         if (Objects.nonNull(request.body())) {
-            requestAttachmentBuilder.setBody(new String(request.body(), request.charset()));
+            Charset charset = request.charset() == null ? StandardCharsets.UTF_8 : request.charset();
+            requestAttachmentBuilder.setBody(new String(request.body(), charset));
         }
 
-        processor.addAttachment(
+        new DefaultAttachmentProcessor().addAttachment(
                 requestAttachmentBuilder.build(),
                 new FreemarkerAttachmentRenderer("http-request.ftl")
         );
 
-        var responsetAttachmentBuilder = HttpResponseAttachment.Builder.create("Response")
+        var responseAttachmentBuilder = HttpResponseAttachment.Builder.create("Response")
                 .setResponseCode(response.status())
                 .setHeaders(headers(response.headers()));
 
+        Response.Builder builder = response.toBuilder();
+
         if (Objects.nonNull(response.body())) {
-            var body = response.body().asInputStream().readAllBytes();
-            ensureClosed(response.body());
-
-            responsetAttachmentBuilder.setBody(new String(body, response.charset()));
-
-            response = response.toBuilder().body(body).build();
+            try (InputStream bodyStream = response.body().asInputStream()) {
+                byte[] body = bodyStream.readAllBytes();
+                Charset charset = response.charset() == null ? StandardCharsets.UTF_8 : response.charset();
+                responseAttachmentBuilder.setBody(new String(body, charset));
+                builder.body(body);
+            } catch (IOException e) {
+                throw new DecodeException(response.status(), "Failed to read response body", request, e);
+            }
         }
 
-        processor.addAttachment(
-                responsetAttachmentBuilder.build(),
+        new DefaultAttachmentProcessor().addAttachment(
+                responseAttachmentBuilder.build(),
                 new FreemarkerAttachmentRenderer("http-response.ftl")
         );
 
-        return decoder.decode(response, type);
+        return decoder.decode(builder.build(), type);
     }
 
     /**
@@ -111,11 +114,17 @@ public class AllureResponseDecoder implements Decoder {
      * @return a new map with header values joined by commas
      */
     private Map<String, String> headers(Map<String, Collection<String>> headers) {
-        return headers.entrySet().stream().collect(
-                Collectors.toMap(
-                        Map.Entry::getKey,
-                        y -> String.join(", ", y.getValue())
-                ));
+        if (headers == null) {
+            return Map.of();
+        } else {
+            return headers.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> "Set-Cookie".equalsIgnoreCase(entry.getKey())
+                                    ? String.join("\n", entry.getValue())
+                                    : String.join(", ", entry.getValue())
+                    ));
+        }
     }
 
 }

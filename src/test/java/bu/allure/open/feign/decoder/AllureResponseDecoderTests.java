@@ -64,15 +64,13 @@ public class AllureResponseDecoderTests {
         );
     }
 
-
-    public interface HelloWorldFeignClient {
+    interface HelloWorldFeignClient {
 
         @RequestLine("GET /api/v1/json")
         HelloWorldRecord getJsonHelloWorld();
 
     }
 
-    public record HelloWorldRecord(String message) {
-    }
+    record HelloWorldRecord(String message) { }
 
 }
